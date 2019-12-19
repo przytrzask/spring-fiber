@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react"
-import { Canvas, useRender } from "react-three-fiber"
+import { Canvas, extend, useThree, useRender } from "react-three-fiber"
 import { useSpring, animated } from "react-spring/three"
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls"
 // import { Link } from "gatsby"
 
 // import Layout from "../components/layout"
@@ -8,22 +9,19 @@ import { useSpring, animated } from "react-spring/three"
 // import SEO from "../components/seo"
 import "./style.css"
 
+extend({ OrbitControls })
+
 const Box = () => {
-  const meshRef = useRef()
   const [hovered, setHovered] = useState(false)
   const [active, setActive] = useState(false)
 
   const props = useSpring({
     scale: active ? [1.5, 1.5, 1.5] : [1, 1, 1],
-    color: hovered ? "gray" : "palevioletred",
+    color: hovered ? "palevioletred" : "gray",
   })
 
-  useRender(() => {
-    meshRef.current.rotation.y += 0.02
-  })
   return (
     <animated.mesh
-      ref={meshRef}
       onPointerOver={() => setHovered(true)}
       onPointerOut={() => setHovered(false)}
       onClick={() => setActive(!active)}
@@ -35,8 +33,18 @@ const Box = () => {
   )
 }
 
+const Controls = () => {
+  const orbitRef = useRef()
+  const { camera, gl } = useThree()
+  useRender(() => {
+    orbitRef.current.update()
+  })
+  return <orbitControls ref={orbitRef} args={[camera, gl.domElement]} />
+}
+
 const IndexPage = () => (
-  <Canvas>
+  <Canvas style={{ height: "100vh" }}>
+    <Controls />
     <Box />
   </Canvas>
 )
